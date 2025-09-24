@@ -159,7 +159,22 @@ abstract class AbsRecyclerViewFragment<A : RecyclerView.Adapter<*>, LM : Recycle
     }
 
     protected open fun createFastScroller(recyclerView: RecyclerView): FastScroller {
-        return FastScrollerBuilder(recyclerView).useMd2Style().build()
+        val fastScroller = FastScrollerBuilder(recyclerView).useMd2Style().build()
+        
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                val layoutManager = rv.layoutManager as LinearLayoutManager
+                val first = layoutManager.findFirstVisibleItemPosition()
+                val last = layoutManager.findLastVisibleItemPosition()
+                if (first != RecyclerView.NO_POSITION && last != RecyclerView.NO_POSITION) {
+                    val list = (adapter as? MyAdapter)?.items ?: return
+                    val firstLetter = list[first].name.first().uppercaseChar()
+                    val lastLetter = list[last].name.first().uppercaseChar()
+                    fastScroller.setBubbleText("$firstLetter–$lastLetter")
+                }
+            }
+        })
+        return fastScroller
     }
 
     private fun initAdapter() {
